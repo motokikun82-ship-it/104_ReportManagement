@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- WPF デスクトップアプリ設定 -->
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <AssemblyName>ReportManagement</AssemblyName>
+    <RootNamespace>ReportManagement</RootNamespace>
+    <!-- 日本語フォント・文字コード設定 -->
+    <ApplicationIcon>app.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- SQLite: 軽量・高速・オフライン完結DB -->
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.0" />
+    <!-- MVVM基盤: INotifyPropertyChanged, RelayCommand等を自動生成 -->
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
+  </ItemGroup>
+
+  <!-- ビルド前にapp.icoを生成する -->
+  <Target Name="GenerateAppIcon" BeforeTargets="BeforeBuild">
+    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\generate-icon.ps1&quot; -OutputPath &quot;$(MSBuildProjectDirectory)\app.ico&quot;" />
+  </Target>
+
+</Project>

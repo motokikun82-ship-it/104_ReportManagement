@@ -1,0 +1,96 @@
+<Window x:Class="ReportManagement.Views.TemplateManagerWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="⚙️ テンプレート管理" Height="500" Width="600"
+        WindowStartupLocation="CenterOwner"
+        Background="{StaticResource BrushBgPrimary}"
+        Foreground="{StaticResource BrushTextPrimary}">
+
+    <Grid Margin="15">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- グループ操作 -->
+        <Grid Grid.Row="0" Margin="0,0,0,15">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Text="テンプレートグループ:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+            <ComboBox Grid.Column="1" x:Name="CmbGroups" DisplayMemberPath="GroupName" SelectionChanged="CmbGroups_SelectionChanged" Margin="0,0,5,0"/>
+            <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="0,0,10,0">
+                <Button Style="{StaticResource BtnIcon}" Click="BtnGroupMoveUp_Click" FontSize="14" Padding="2" ToolTip="グループを上に移動">↑</Button>
+                <Button Style="{StaticResource BtnIcon}" Click="BtnGroupMoveDown_Click" FontSize="14" Padding="2" ToolTip="グループを下に移動" Margin="3,0,0,0">↓</Button>
+            </StackPanel>
+            <StackPanel Grid.Column="3" Orientation="Horizontal">
+                <Button Style="{StaticResource BtnSecondary}" Click="BtnAddGroup_Click" Margin="0,0,5,0">＋ 新規グループ</Button>
+                <Button Style="{StaticResource BtnSecondary}" Click="BtnRenameGroup_Click" Margin="0,0,5,0">名前変更</Button>
+                <Button Style="{StaticResource BtnDanger}" Click="BtnDeleteGroup_Click">🗑 グループ削除</Button>
+            </StackPanel>
+        </Grid>
+
+        <!-- 項目リスト -->
+        <Border Grid.Row="1" Background="{StaticResource BrushBgPanel}" BorderBrush="{StaticResource BrushBorder}" BorderThickness="1" CornerRadius="4" Padding="10">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Grid Grid.Row="0" Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Orientation="Horizontal">
+                        <TextBlock Text="グループ内の項目設定" FontWeight="Bold" VerticalAlignment="Center"/>
+                        <CheckBox x:Name="ChkIsDefault" Content="アプリ起動時の自動生成（デフォルト）に設定する" Margin="20,0,0,0" Checked="ChkIsDefault_Changed" Unchecked="ChkIsDefault_Changed"/>
+                    </StackPanel>
+                    <Button Grid.Column="1" Style="{StaticResource BtnPrimary}" Click="BtnAddItem_Click">＋ 項目を追加</Button>
+                </Grid>
+
+                <DataGrid x:Name="DgItems" Grid.Row="1" AutoGenerateColumns="False" CanUserAddRows="False" 
+                          HeadersVisibility="Column"
+                          CellEditEnding="DgItems_CellEditEnding">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="表示順" Binding="{Binding SortOrder}" Width="60"/>
+                        <DataGridTextColumn Header="項目名" Binding="{Binding ItemName}" Width="*"/>
+                        <DataGridCheckBoxColumn Header="件数管理" Binding="{Binding IsCountable}" Width="80"/>
+                        <DataGridTextColumn Header="初期件数" Binding="{Binding DefaultCount}" Width="80"/>
+                        <DataGridTemplateColumn Width="60">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                        <Button Style="{StaticResource BtnIcon}" Click="BtnMoveUp_Click" FontSize="14" Padding="2">↑</Button>
+                                        <Button Style="{StaticResource BtnIcon}" Click="BtnMoveDown_Click" FontSize="14" Padding="2">↓</Button>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTemplateColumn Width="50">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button Style="{StaticResource BtnSecondary}" Click="BtnMoveItemGroup_Click" FontSize="11" Padding="2">移動</Button>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTemplateColumn Width="50">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button Style="{StaticResource BtnDanger}" Click="BtnDeleteItem_Click">🗑</Button>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
+        </Border>
+
+        <!-- 閉じるボタン -->
+        <Button Grid.Row="2" Style="{StaticResource BtnSecondary}" Width="100" HorizontalAlignment="Right" Margin="0,15,0,0" Click="BtnClose_Click">閉じる</Button>
+    </Grid>
+</Window>

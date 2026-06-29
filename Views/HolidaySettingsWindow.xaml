@@ -1,0 +1,89 @@
+<Window x:Class="ReportManagement.Views.HolidaySettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="📅 祝日・休日設定" Height="500" Width="600"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource BrushBgPrimary}"
+        Foreground="{DynamicResource BrushTextPrimary}">
+
+    <Grid Margin="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- 年ナビゲーション -->
+        <Border Grid.Row="0" Background="{DynamicResource BrushBgPanel}" CornerRadius="4" Padding="10" Margin="0,0,0,8">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0" Orientation="Horizontal">
+                    <Button Style="{DynamicResource BtnIcon}" x:Name="BtnPrevYear" Click="BtnPrevYear_Click" Content="◀"/>
+                    <TextBlock x:Name="LblYear" FontSize="18" FontWeight="Bold" VerticalAlignment="Center" Margin="12,0" Foreground="{DynamicResource BrushTextPrimary}"/>
+                    <Button Style="{DynamicResource BtnIcon}" x:Name="BtnNextYear" Click="BtnNextYear_Click" Content="▶"/>
+                </StackPanel>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Style="{DynamicResource BtnSecondary}" x:Name="BtnImport" Click="BtnImport_Click" Margin="0,0,8,0" Padding="12,5">🌐 取り込み</Button>
+                    <Button Style="{DynamicResource BtnSecondary}" x:Name="BtnExport" Click="BtnExport_Click" Margin="0,0,8,0" Padding="12,5">📤 エクスポート</Button>
+                    <Button Style="{DynamicResource BtnSecondary}" x:Name="BtnAddNew" Click="BtnAddNew_Click" Padding="12,5">＋ 追加</Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- 祝日リスト -->
+        <DataGrid Grid.Row="1" x:Name="DgHolidays"
+                  AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False"
+                  CanUserReorderColumns="False" CanUserResizeColumns="True"
+                  Background="{DynamicResource BrushBgPanel}" BorderBrush="{DynamicResource BrushBorder}"
+                  Foreground="{DynamicResource BrushTextPrimary}"
+                  RowBackground="{DynamicResource BrushBgPanel}"
+                  AlternatingRowBackground="{DynamicResource BrushBgSecondary}"
+                  HorizontalGridLinesBrush="{DynamicResource BrushBorder}"
+                  HeadersVisibility="Column"
+                   SelectionMode="Single" SelectionUnit="FullRow">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="日付（yyyy/M/d）" Width="120"
+                                    Binding="{Binding HolidayDate, StringFormat=yyyy/M/d}"/>
+                <DataGridTextColumn Header="祝日名" Width="*"
+                                    Binding="{Binding Name, UpdateSourceTrigger=PropertyChanged}"/>
+                <DataGridTextColumn Header="備考" Width="150"
+                                    Binding="{Binding Note, UpdateSourceTrigger=PropertyChanged}"/>
+                <DataGridCheckBoxColumn Header="毎年" Width="50"
+                                        Binding="{Binding IsRecurring}"/>
+                <DataGridTextColumn Header="種別" Width="70"
+                                    Binding="{Binding Type}" IsReadOnly="True"/>
+                <DataGridTemplateColumn Header="" Width="40">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Style="{DynamicResource BtnDanger}" Command="{Binding RemoveCommand}" Padding="2" FontSize="11">🗑</Button>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <!-- フッター -->
+        <Border Grid.Row="2" Background="{DynamicResource BrushBgPanel}" CornerRadius="4" Padding="10" Margin="0,8,0,0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock x:Name="LblStatus" Grid.Column="0" VerticalAlignment="Center" Foreground="{DynamicResource BrushTextSecondary}" FontSize="11"/>
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <Button Style="{DynamicResource BtnSecondary}" Click="BtnReset_Click" Margin="0,0,8,0" Padding="15,6">🔄 デフォルトに戻す</Button>
+                    <Button Style="{DynamicResource BtnPrimary}" Click="BtnSave_Click" Padding="20,6">💾 保存</Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

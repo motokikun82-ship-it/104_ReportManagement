@@ -1,0 +1,82 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\BEST\\Desktop\\morinaga\\Script\\104_ReportManagement\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\BEST\\AppData\\Local\\Temp\\.vsdbgsrc\\4c22212f7388e966961b86774e48f5f93c6055d68891d0dcbc545135540f5140\\ConditionalWeakTable.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\BEST\\AppData\\Local\\Temp\\.vsdbgsrc\\e5f0122c63e42c8564bea67d568ce8dc2724cd08add1458bf61c3a7f98180629\\StyleHelper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\BEST\\AppData\\Local\\Temp\\.vsdbgsrc\\7a929768ad032396ca83fa58bcf72e5694ba07c4383208f1b665246575838e14\\FrameworkElement.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2FEB8F30-8E1F-531A-7A71-787F82B36BF9}|ReportManagement.csproj|c:\\users\\best\\desktop\\morinaga\\script\\104_reportmanagement\\models\\templateitem.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2FEB8F30-8E1F-531A-7A71-787F82B36BF9}|ReportManagement.csproj|solutionrelative:models\\templateitem.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "ConditionalWeakTable.cs",
+              "DocumentMoniker": "C:\\Users\\BEST\\AppData\\Local\\Temp\\.vsdbgsrc\\4c22212f7388e966961b86774e48f5f93c6055d68891d0dcbc545135540f5140\\ConditionalWeakTable.cs",
+              "RelativeDocumentMoniker": "..\\..\\..\\..\\AppData\\Local\\Temp\\.vsdbgsrc\\4c22212f7388e966961b86774e48f5f93c6055d68891d0dcbc545135540f5140\\ConditionalWeakTable.cs",
+              "ToolTip": "C:\\Users\\BEST\\AppData\\Local\\Temp\\.vsdbgsrc\\4c22212f7388e966961b86774e48f5f93c6055d68891d0dcbc545135540f5140\\ConditionalWeakTable.cs",
+              "RelativeToolTip": "..\\..\\..\\..\\AppData\\Local\\Temp\\.vsdbgsrc\\4c22212f7388e966961b86774e48f5f93c6055d68891d0dcbc545135540f5140\\ConditionalWeakTable.cs",
+              "ViewState": "AgIAAKIAAAAAAAAAAAAcwKgAAAAOAAAAAQAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-25T01:18:32.203Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "StyleHelper.cs",
+              "DocumentMoniker": "C:\\Users\\BEST\\AppData\\Local\\Temp\\.vsdbgsrc\\e5f0122c63e42c8564bea67d568ce8dc2724cd08add1458bf61c3a7f98180629\\StyleHelper.cs",
+              "RelativeDocumentMoniker": "..\\..\\..\\..\\AppData\\Local\\Temp\\.vsdbgsrc\\e5f0122c63e42c8564bea67d568ce8dc2724cd08add1458bf61c3a7f98180629\\StyleHelper.cs",
+              "ToolTip": "C:\\Users\\BEST\\AppData\\Local\\Temp\\.vsdbgsrc\\e5f0122c63e42c8564bea67d568ce8dc2724cd08add1458bf61c3a7f98180629\\StyleHelper.cs",
+              "RelativeToolTip": "..\\..\\..\\..\\AppData\\Local\\Temp\\.vsdbgsrc\\e5f0122c63e42c8564bea67d568ce8dc2724cd08add1458bf61c3a7f98180629\\StyleHelper.cs",
+              "ViewState": "AgIAAP8JAAAAAAAAAAAAAP8JAAAAAAAAAQAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-24T08:18:21.177Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "FrameworkElement.cs",
+              "DocumentMoniker": "C:\\Users\\BEST\\AppData\\Local\\Temp\\.vsdbgsrc\\7a929768ad032396ca83fa58bcf72e5694ba07c4383208f1b665246575838e14\\FrameworkElement.cs",
+              "RelativeDocumentMoniker": "..\\..\\..\\..\\AppData\\Local\\Temp\\.vsdbgsrc\\7a929768ad032396ca83fa58bcf72e5694ba07c4383208f1b665246575838e14\\FrameworkElement.cs",
+              "ToolTip": "C:\\Users\\BEST\\AppData\\Local\\Temp\\.vsdbgsrc\\7a929768ad032396ca83fa58bcf72e5694ba07c4383208f1b665246575838e14\\FrameworkElement.cs",
+              "RelativeToolTip": "..\\..\\..\\..\\AppData\\Local\\Temp\\.vsdbgsrc\\7a929768ad032396ca83fa58bcf72e5694ba07c4383208f1b665246575838e14\\FrameworkElement.cs",
+              "ViewState": "AgIAADkLAAAAAAAAAAAQwEMLAAACAAAAAQAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-24T08:19:44.04Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "TemplateItem.cs",
+              "DocumentMoniker": "C:\\Users\\BEST\\Desktop\\morinaga\\Script\\104_ReportManagement\\Models\\TemplateItem.cs",
+              "RelativeDocumentMoniker": "Models\\TemplateItem.cs",
+              "ToolTip": "C:\\Users\\BEST\\Desktop\\morinaga\\Script\\104_ReportManagement\\Models\\TemplateItem.cs",
+              "RelativeToolTip": "Models\\TemplateItem.cs",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAAAoAAAAcAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-25T01:24:24.249Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
