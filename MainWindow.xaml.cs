@@ -99,4 +99,10 @@ public partial class MainWindow : Window
         var win = new SettingsWindow { Owner = this };
         win.ShowDialog();
     }
+
+    private void OpenAggregation_Click(object sender, RoutedEventArgs e)
+    {
+        var win = new Views.AggregationWindow { Owner = this };
+        win.ShowDialog();
+    }
 }

@@ -11,10 +11,13 @@
     <RootNamespace>ReportManagement</RootNamespace>
     <!-- 日本語フォント・文字コード設定 -->
     <ApplicationIcon>app.ico</ApplicationIcon>
+    <!-- NU1701: LiveChartsCoreの依存パッケージ(OpenTK等)が.NET Framework向けの警告だが動作に影響なし -->
+    <NoWarn>NU1701</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
     <!-- SQLite: 軽量・高速・オフライン完結DB -->
+    <PackageReference Include="LiveChartsCore.SkiaSharpView.WPF" Version="2.0.5" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.0" />
     <!-- MVVM基盤: INotifyPropertyChanged, RelayCommand等を自動生成 -->
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />

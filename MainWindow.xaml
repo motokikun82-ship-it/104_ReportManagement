@@ -145,6 +145,9 @@
                     <Button Style="{StaticResource BtnSecondary}" Click="OpenNotesWindow_Click" Margin="0,0,5,0">
                         📝 メモ
                     </Button>
+                    <Button Style="{StaticResource BtnSecondary}" Click="OpenAggregation_Click" Margin="0,0,5,0">
+                        📊 集計
+                    </Button>
                     <Button Style="{StaticResource BtnIcon}" Click="OpenSettings_Click" ToolTip="設定">⚙</Button>
                 </StackPanel>
             </Grid>
@@ -478,26 +481,26 @@
                                                             <RowDefinition Height="Auto"/>
                                                             <RowDefinition Height="Auto"/>
                                                         </Grid.RowDefinitions>
-                                                         <Grid Grid.Row="0" Margin="0,0,0,4">
-                                                             <Grid.ColumnDefinitions>
-                                                                 <ColumnDefinition Width="50"/>
-                                                                 <ColumnDefinition Width="60"/>
-                                                                 <ColumnDefinition Width="Auto"/>
-                                                                 <ColumnDefinition Width="60"/>
-                                                                 <ColumnDefinition Width="*"/>
-                                                             </Grid.ColumnDefinitions>
-                                                             <TextBlock Grid.Column="0" Text="時刻:" Foreground="{StaticResource BrushTextSecondary}" FontSize="11" VerticalAlignment="Center"/>
-                                                             <TextBox Grid.Column="1" Text="{Binding StartTime, UpdateSourceTrigger=PropertyChanged}" 
-                                                                      Foreground="{StaticResource BrushTextPrimary}" Background="Transparent" BorderThickness="0" FontSize="11"
-                                                                      d:Text="17:30" ToolTip="開始時刻"
-                                                                      IsEnabled="{Binding IsReadOnly, Converter={StaticResource InvBoolToVis}}"/>
-                                                             <TextBlock Grid.Column="2" Text="～" FontSize="11" Foreground="{StaticResource BrushTextSecondary}" 
-                                                                        VerticalAlignment="Center" Margin="4,0"/>
-                                                             <TextBox Grid.Column="3" Text="{Binding EndTime, UpdateSourceTrigger=PropertyChanged}" 
-                                                                      Foreground="{StaticResource BrushTextPrimary}" Background="Transparent" BorderThickness="0" FontSize="11"
-                                                                      d:Text="18:00" ToolTip="終了時刻"
-                                                                      IsEnabled="{Binding IsReadOnly, Converter={StaticResource InvBoolToVis}}"/>
-                                                         </Grid>
+                                                          <Grid Grid.Row="0" Margin="0,0,0,4">
+                                                              <Grid.ColumnDefinitions>
+                                                                  <ColumnDefinition Width="50"/>
+                                                                  <ColumnDefinition Width="70"/>
+                                                                  <ColumnDefinition Width="Auto"/>
+                                                                  <ColumnDefinition Width="70"/>
+                                                                  <ColumnDefinition Width="*"/>
+                                                              </Grid.ColumnDefinitions>
+                                                              <TextBlock Grid.Column="0" Text="時刻:" Foreground="{StaticResource BrushTextSecondary}" FontSize="11" VerticalAlignment="Center"/>
+                                                              <TextBox Grid.Column="1" Text="{Binding StartTime, UpdateSourceTrigger=PropertyChanged}" 
+                                                                       Foreground="{StaticResource BrushTextPrimary}" Background="Transparent" BorderThickness="0" FontSize="11"
+                                                                       d:Text="17:30" ToolTip="開始時刻"
+                                                                       IsEnabled="{Binding IsReadOnly, Converter={StaticResource InvBoolToVis}}"/>
+                                                              <TextBlock Grid.Column="2" Text="～" FontSize="11" Foreground="{StaticResource BrushTextSecondary}" 
+                                                                         VerticalAlignment="Center" Margin="4,0"/>
+                                                              <TextBox Grid.Column="3" Text="{Binding EndTime, UpdateSourceTrigger=PropertyChanged}" 
+                                                                       Foreground="{StaticResource BrushTextPrimary}" Background="Transparent" BorderThickness="0" FontSize="11"
+                                                                       d:Text="18:00" ToolTip="終了時刻"
+                                                                       IsEnabled="{Binding IsReadOnly, Converter={StaticResource InvBoolToVis}}"/>
+                                                          </Grid>
                                                          <Grid Grid.Row="1">
                                                              <Grid.ColumnDefinitions>
                                                                  <ColumnDefinition Width="50"/>
@@ -539,15 +542,15 @@
                             </Grid>
                             <Grid Grid.Row="1">
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="50"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="50"/>
+                                    <ColumnDefinition Width="70"/>
+                                    <ColumnDefinition Width="40"/>
+                                    <ColumnDefinition Width="70"/>
+                                    <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
                                 <TextBox Grid.Column="0" Text="{Binding NewStartTime, UpdateSourceTrigger=PropertyChanged}" d:Text="開始" FontSize="11" ToolTip="開始時刻（例: 17:30）"/>
                                 <TextBlock Grid.Column="1" Text="～" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="2,0"/>
                                 <TextBox Grid.Column="2" Text="{Binding NewEndTime, UpdateSourceTrigger=PropertyChanged}" d:Text="終了" FontSize="11" ToolTip="終了時刻（例: 18:00）"/>
-                                <TextBox Grid.Column="3" Text="{Binding NewDescription, UpdateSourceTrigger=PropertyChanged}" d:Text="本文" FontSize="11" ToolTip="詳細内容" Margin="4,0,0,0"/>
+                                <TextBox Grid.Column="3" Text="{Binding NewDescription, UpdateSourceTrigger=PropertyChanged}" d:Text="詳細" FontSize="11" ToolTip="詳細内容（自由メモ）" Margin="4,0,0,0"/>
                             </Grid>
                         </Grid>
                     </Grid>

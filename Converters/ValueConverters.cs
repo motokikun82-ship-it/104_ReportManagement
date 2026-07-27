@@ -150,3 +150,30 @@ public class StringEmptyToNullConverter : IValueConverter
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         => throw new NotImplementedException();
 }
+
+/// <summary>
+/// enum → bool 変換（RadioButtonのIsCheckedバインド用）。
+/// ConverterParameterにenum値を指定して一致判定。
+/// </summary>
+public class RadioButtonConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        => value?.Equals(parameter) == true;
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        => value is true ? parameter : Binding.DoNothing;
+}
+
+/// <summary>
+/// PeriodMode enum → Visibility 変換。
+/// ConverterParameterに指定したモードの場合のみ Visible、それ以外は Collapsed。
+/// </summary>
+[ValueConversion(typeof(object), typeof(Visibility))]
+public class PeriodModeVisibilityConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        => value?.Equals(parameter) == true ? Visibility.Visible : Visibility.Collapsed;
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        => throw new NotImplementedException();
+}
