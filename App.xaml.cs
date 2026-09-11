@@ -1,4 +1,5 @@
 using System.IO;
+using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
@@ -12,6 +13,16 @@ public partial class App : Application
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+
+        // SkiaSharp/LiveCharts が .NET Framework の mscorlib を解決できなくなる問題の回避
+        // (.NET 8 環境で SkiaSharp が mscorlib を要求した場合、System.Runtime を返す)
+        AppDomain.CurrentDomain.AssemblyResolve += (sender, args) =>
+        {
+            var assemblyName = new AssemblyName(args.Name);
+            if (assemblyName.Name == "mscorlib")
+                return Assembly.Load("System.Runtime");
+            return null;
+        };
 
         // 未捕捉例外をすべて捕捉
         DispatcherUnhandledException += (s, ev) =>

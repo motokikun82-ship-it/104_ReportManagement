@@ -162,11 +162,6 @@ public partial class ScheduleTemplateWindow : Window
             return;
         }
 
-        var confirm = MessageBox.Show(
-            $"{targetItems.Count} 項目 × {_selectedDates.Count} 日 = {targetItems.Count * _selectedDates.Count} 件を登録します。\n\n続行しますか？",
-            "登録確認", MessageBoxButton.YesNo, MessageBoxImage.Question);
-        if (confirm != MessageBoxResult.Yes) return;
-
         int inserted = 0, skipped = 0;
         foreach (var date in _selectedDates)
         {
@@ -214,7 +209,6 @@ public partial class ScheduleTemplateWindow : Window
             }
         }
 
-        MessageBox.Show($"登録完了: {inserted} 件\nスキップ(既存): {skipped} 件", "結果", MessageBoxButton.OK, MessageBoxImage.Information);
         if (inserted > 0) DialogResult = true;
     }
 }

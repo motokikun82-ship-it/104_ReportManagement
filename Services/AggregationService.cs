@@ -39,9 +39,28 @@ public class AggregationService
             startDate, endDate);
     }
 
-    public List<AggregationRow> GetCustomRangeAggregation(string startDate, string endDate)
+    public List<AggregationRow> GetDailyAggregation(string startDate, string endDate)
     {
-        return GetMonthlyAggregation(startDate, endDate);
+        return QueryAggregation(
+            "SELECT ItemName, EntryDate AS Period, SUM(Count) AS TotalCount " +
+            "FROM DailyEntries " +
+            "WHERE EntryDate >= @Start AND EntryDate <= @End AND IsCountable = 1 " +
+            "GROUP BY ItemName, Period " +
+            "ORDER BY ItemName, Period",
+            startDate, endDate);
+    }
+
+    public List<AggregationRow> GetWeeklyAggregation(string startDate, string endDate)
+    {
+        return QueryAggregation(
+            "SELECT ItemName, " +
+            "  DATE(EntryDate, '-' || CAST((CAST(strftime('%w', EntryDate) AS INTEGER) + 6) % 7 AS TEXT) || ' days') AS Period, " +
+            "  SUM(Count) AS TotalCount " +
+            "FROM DailyEntries " +
+            "WHERE EntryDate >= @Start AND EntryDate <= @End AND IsCountable = 1 " +
+            "GROUP BY ItemName, Period " +
+            "ORDER BY ItemName, Period",
+            startDate, endDate);
     }
 
     public List<string> GetAllItemNames()

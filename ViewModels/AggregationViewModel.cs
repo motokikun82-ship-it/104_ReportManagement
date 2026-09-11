@@ -17,6 +17,7 @@ namespace ReportManagement.ViewModels;
 
 public enum PeriodMode { Monthly, Yearly, Custom }
 public enum ChartTypeMode { Line, StackedBar }
+public enum DisplayUnit { Day, Week, Month, Year }
 
 public partial class ItemCheckItem : ObservableObject
 {
@@ -92,6 +93,9 @@ public partial class AggregationViewModel : ObservableObject
     private ChartTypeMode _chartType = ChartTypeMode.Line;
 
     [ObservableProperty]
+    private DisplayUnit _displayUnit = DisplayUnit.Month;
+
+    [ObservableProperty]
     private DataView? _aggregationTable;
 
     [ObservableProperty]
@@ -129,11 +133,23 @@ public partial class AggregationViewModel : ObservableObject
         _ = RefreshAsync();
     }
 
-    partial void OnPeriodModeChanged(PeriodMode value) => _ = RefreshAsync();
+    partial void OnPeriodModeChanged(PeriodMode value)
+    {
+        UpdateDefaultDisplayUnit();
+        _ = RefreshAsync();
+    }
     partial void OnSelectedYearChanged(int value) => _ = RefreshAsync();
     partial void OnSelectedMonthChanged(int value) => _ = RefreshAsync();
-    partial void OnCustomStartChanged(DateTime value) => _ = RefreshAsync();
-    partial void OnCustomEndChanged(DateTime value) => _ = RefreshAsync();
+    partial void OnCustomStartChanged(DateTime value)
+    {
+        UpdateDefaultDisplayUnit();
+        _ = RefreshAsync();
+    }
+    partial void OnCustomEndChanged(DateTime value)
+    {
+        UpdateDefaultDisplayUnit();
+        _ = RefreshAsync();
+    }
 
     public void LoadItems()
     {
@@ -180,7 +196,29 @@ public partial class AggregationViewModel : ObservableObject
             RebuildFromCache();
     }
 
+    partial void OnDisplayUnitChanged(DisplayUnit value) => _ = RefreshAsync();
     partial void OnChartTypeChanged(ChartTypeMode value) => RebuildChart();
+
+    private void UpdateDefaultDisplayUnit()
+    {
+        if (PeriodMode == PeriodMode.Monthly)
+        {
+            DisplayUnit = DisplayUnit.Month;
+            return;
+        }
+        if (PeriodMode == PeriodMode.Yearly)
+        {
+            DisplayUnit = DisplayUnit.Year;
+            return;
+        }
+        int days = (CustomEnd - CustomStart).Days;
+        if (days <= 31)
+            DisplayUnit = DisplayUnit.Day;
+        else if (days <= 182)
+            DisplayUnit = DisplayUnit.Week;
+        else
+            DisplayUnit = DisplayUnit.Month;
+    }
 
     private void UpdateYearRangeLabel()
     {
@@ -216,10 +254,14 @@ public partial class AggregationViewModel : ObservableObject
                     return;
             }
 
-            var mode = PeriodMode == PeriodMode.Yearly ? "yearly" : "monthly";
-            _rawRows = mode == "yearly"
-                ? _agg.GetYearlyAggregation(start, end)
-                : _agg.GetMonthlyAggregation(start, end);
+            _rawRows = DisplayUnit switch
+            {
+                DisplayUnit.Year => _agg.GetYearlyAggregation(start, end),
+                DisplayUnit.Month => _agg.GetMonthlyAggregation(start, end),
+                DisplayUnit.Week => _agg.GetWeeklyAggregation(start, end),
+                DisplayUnit.Day => _agg.GetDailyAggregation(start, end),
+                _ => _agg.GetMonthlyAggregation(start, end),
+            };
 
             RebuildFromCache();
 
@@ -258,6 +300,15 @@ public partial class AggregationViewModel : ObservableObject
 
         var displayPeriods = periods.Select(FormatPeriod).ToList();
 
+        var avgLabel = DisplayUnit switch
+        {
+            DisplayUnit.Day => "日平均",
+            DisplayUnit.Week => "週平均",
+            DisplayUnit.Month => "月平均",
+            DisplayUnit.Year => "年平均",
+            _ => "平均",
+        };
+
         var table = new DataTable();
         table.Columns.Add("項目名", typeof(string));
 
@@ -270,7 +321,7 @@ public partial class AggregationViewModel : ObservableObject
             colNames.Add(safeName);
             _periodDisplayNames[safeName] = displayPeriods[i];
         }
-        table.Columns.Add("月平均", typeof(double));
+        table.Columns.Add(avgLabel, typeof(double));
 
         var itemGroups = rows.GroupBy(r => r.ItemName).OrderBy(g => g.Key);
 
@@ -290,7 +341,7 @@ public partial class AggregationViewModel : ObservableObject
                 if (val > 0) nonZeroMonths++;
             }
 
-            row["月平均"] = nonZeroMonths > 0 ? Math.Round((double)total / nonZeroMonths, 1) : 0;
+            row[avgLabel] = nonZeroMonths > 0 ? Math.Round((double)total / nonZeroMonths, 1) : 0;
             table.Rows.Add(row);
         }
 
@@ -311,7 +362,7 @@ public partial class AggregationViewModel : ObservableObject
         }
 
         int itemCount = table.Rows.Count - 1;
-        totalRow["月平均"] = itemCount > 0 && periods.Count > 0
+        totalRow[avgLabel] = itemCount > 0 && periods.Count > 0
             ? Math.Round(grandTotal / (periods.Count * itemCount), 1)
             : 0;
         table.Rows.Add(totalRow);
@@ -330,8 +381,16 @@ public partial class AggregationViewModel : ObservableObject
             return;
         }
 
+        var avgLabel = DisplayUnit switch
+        {
+            DisplayUnit.Day => "日平均",
+            DisplayUnit.Week => "週平均",
+            DisplayUnit.Month => "月平均",
+            DisplayUnit.Year => "年平均",
+            _ => "平均",
+        };
         var periodCols = table.Columns.Cast<DataColumn>()
-            .Where(c => c.ColumnName != "項目名" && c.ColumnName != "月平均")
+            .Where(c => c.ColumnName != "項目名" && c.ColumnName != avgLabel)
             .ToList();
 
         var periodLabels = periodCols
@@ -412,7 +471,7 @@ public partial class AggregationViewModel : ObservableObject
 
         var sb = new StringBuilder();
 
-        sb.AppendLine(string.Join("\t", table.Columns.Cast<DataColumn>().Select(c => c.ColumnName)));
+        sb.AppendLine(string.Join("\t", table.Columns.Cast<DataColumn>().Select(c => GetOutputHeaderName(c.ColumnName))));
 
         foreach (DataRow row in table.Rows)
         {
@@ -451,7 +510,7 @@ public partial class AggregationViewModel : ObservableObject
             var sb = new StringBuilder();
 
             sb.AppendLine(string.Join(",", table.Columns.Cast<DataColumn>()
-                .Select(c => $"\"{c.ColumnName}\"")));
+                .Select(c => $"\"{GetOutputHeaderName(c.ColumnName)}\"")));
 
             foreach (DataRow row in table.Rows)
             {
@@ -506,9 +565,17 @@ public partial class AggregationViewModel : ObservableObject
     public string? GetPeriodDisplayName(string safeName)
         => _periodDisplayNames.TryGetValue(safeName, out var dn) ? dn : null;
 
+    private string GetOutputHeaderName(string columnName)
+        => _periodDisplayNames.TryGetValue(columnName, out var dn) ? dn : columnName;
+
     private static string FormatPeriod(string period)
     {
-        if (period.Length == 7) return period.Replace("-", "/");
+        // Month: "2026-01" → "2026/01"
+        if (period.Length == 7 && period[4] == '-')
+            return period.Replace("-", "/");
+        // Day or week Monday: "2026-07-28" → "07/28"
+        if (period.Length == 10 && DateTime.TryParse(period, out var dt))
+            return dt.ToString("MM/dd");
         return period;
     }
 }

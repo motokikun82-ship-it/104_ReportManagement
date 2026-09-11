@@ -18,6 +18,9 @@
         <x:StaticExtension x:Key="PeriodModeCustom" Member="vm:PeriodMode.Custom"/>
         <x:StaticExtension x:Key="ChartTypeLine" Member="vm:ChartTypeMode.Line"/>
         <x:StaticExtension x:Key="ChartTypeStackedBar" Member="vm:ChartTypeMode.StackedBar"/>
+        <x:StaticExtension x:Key="DisplayUnitDay" Member="vm:DisplayUnit.Day"/>
+        <x:StaticExtension x:Key="DisplayUnitWeek" Member="vm:DisplayUnit.Week"/>
+        <x:StaticExtension x:Key="DisplayUnitMonth" Member="vm:DisplayUnit.Month"/>
     </Window.Resources>
 
     <Grid Margin="16">
@@ -124,7 +127,7 @@
             </ContentControl>
         </Border>
 
-        <!-- 行4: グラフ種類切替 -->
+        <!-- 行4: グラフ種類切替＋表示単位 -->
         <Border Grid.Row="3" Background="{StaticResource BrushBgPanel}" CornerRadius="4" Padding="12" Margin="0,0,0,8">
             <StackPanel Orientation="Horizontal">
                 <TextBlock Text="グラフ種類:" VerticalAlignment="Center" Margin="0,0,12,0" Foreground="{StaticResource BrushTextSecondary}"/>
@@ -134,6 +137,18 @@
                 <RadioButton Content="積み上げ棒グラフ" GroupName="ChartType"
                              Foreground="{StaticResource BrushTextPrimary}"
                              IsChecked="{Binding ChartType, Converter={StaticResource RadioBtnConv}, ConverterParameter={StaticResource ChartTypeStackedBar}}"/>
+                <TextBlock Text="  │  " VerticalAlignment="Center" Margin="0,0,12,0"
+                           Foreground="{StaticResource BrushTextSecondary}"/>
+                <TextBlock Text="表示単位:" VerticalAlignment="Center" Margin="0,0,12,0" Foreground="{StaticResource BrushTextSecondary}"/>
+                <RadioButton Content="日" GroupName="DisplayUnit" Margin="0,0,12,0"
+                             Foreground="{StaticResource BrushTextPrimary}"
+                             IsChecked="{Binding DisplayUnit, Converter={StaticResource RadioBtnConv}, ConverterParameter={StaticResource DisplayUnitDay}}"/>
+                <RadioButton Content="週" GroupName="DisplayUnit" Margin="0,0,12,0"
+                             Foreground="{StaticResource BrushTextPrimary}"
+                             IsChecked="{Binding DisplayUnit, Converter={StaticResource RadioBtnConv}, ConverterParameter={StaticResource DisplayUnitWeek}}"/>
+                <RadioButton Content="月" GroupName="DisplayUnit"
+                             Foreground="{StaticResource BrushTextPrimary}"
+                             IsChecked="{Binding DisplayUnit, Converter={StaticResource RadioBtnConv}, ConverterParameter={StaticResource DisplayUnitMonth}}"/>
             </StackPanel>
         </Border>
 

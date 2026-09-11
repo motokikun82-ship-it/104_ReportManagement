@@ -200,7 +200,7 @@
         <Border Grid.Row="0" Background="{StaticResource BrushBgPanel}" CornerRadius="4" Padding="10" Margin="0,0,0,8">
             <StackPanel Orientation="Horizontal">
                 <TextBlock Text="📁 グループ:" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                <ComboBox x:Name="CmbGroup" Width="250" ItemsSource="{Binding TemplateGroups}" 
+                <ComboBox x:Name="CmbGroup" ItemsSource="{Binding TemplateGroups}" MinWidth="120"
                           DisplayMemberPath="GroupName" SelectedValuePath="Id"
                           SelectionChanged="CmbGroup_SelectionChanged"
                           ToolTip="テンプレートグループを選択"/>
