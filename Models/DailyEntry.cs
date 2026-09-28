@@ -35,6 +35,19 @@ public class DailyEntry
     /// <summary>表示順（小さい数値が上）</summary>
     public int SortOrder { get; set; } = 0;
 
+    /// <summary>
+    /// 実行済みかどうか（要チェック項目用）。
+    /// false の要チェック項目は集計から除外される。
+    /// チェック不要の項目は常に true として扱う。
+    /// </summary>
+    public bool IsExecuted { get; set; } = true;
+
+    /// <summary>
+    /// 実行チェックボックスを表示するかどうか。
+    /// テンプレートの要チェック旗から引き継がれる。
+    /// </summary>
+    public bool ShowCheck { get; set; } = false;
+
     /// <summary>レコード作成日時（ISO8601形式）</summary>
     public string CreatedAt { get; set; } = string.Empty;
 

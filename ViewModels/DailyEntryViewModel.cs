@@ -38,9 +38,26 @@ public partial class DailyEntryViewModel : ObservableObject
     private string _note = string.Empty;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowWarning))]
+    [NotifyPropertyChangedFor(nameof(IsDimmed))]
+    private bool _isExecuted = true;
+
+    /// <summary>実行チェックボックスを表示するかどうか</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowWarning))]
+    [NotifyPropertyChangedFor(nameof(IsDimmed))]
+    private bool _showCheck = false;
+
+    [ObservableProperty]
     private bool _isExpanded;
 
     public int SortOrder { get; set; }
+
+    /// <summary>要チェックかつ未実行の場合に警告表示するかどうか</summary>
+    public bool ShowWarning => ShowCheck && !IsExecuted;
+
+    /// <summary>実行済みの要チェック項目をグレー表示するかどうか</summary>
+    public bool IsDimmed => ShowCheck && IsExecuted;
 
     /// <summary>この行を削除するよう親VMに通知するイベント</summary>
     public event Action<DailyEntryViewModel>? DeleteRequested;
@@ -62,6 +79,8 @@ public partial class DailyEntryViewModel : ObservableObject
         _count      = entry.Count;
         _isCountable = entry.IsCountable;
         _note       = entry.Note;
+        _isExecuted = entry.IsExecuted;
+        _showCheck  = entry.ShowCheck;
         SortOrder   = entry.SortOrder;
     }
 
@@ -97,6 +116,9 @@ public partial class DailyEntryViewModel : ObservableObject
 
     /// <summary>Note が変更されたらDBに保存する。</summary>
     partial void OnNoteChanged(string value) => AutoSave();
+
+    /// <summary>IsExecuted が変更されたらDBに保存する。</summary>
+    partial void OnIsExecutedChanged(bool value) => AutoSave();
 
     /// <summary>変更内容をSQLiteに即座に反映する（リアルタイム自動保存）。</summary>
     private void AutoSave()
@@ -163,5 +185,7 @@ public partial class DailyEntryViewModel : ObservableObject
         IsCountable = IsCountable,
         Note        = Note,
         SortOrder   = SortOrder,
+        IsExecuted  = IsExecuted,
+        ShowCheck   = ShowCheck,
     };
 }

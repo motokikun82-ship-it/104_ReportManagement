@@ -125,6 +125,27 @@ public class HolidayBrushConverter : IValueConverter
 }
 
 /// <summary>
+/// 実行済み (bool) → Foreground Brush 変換。
+/// true = BrushTextMuted（薄グレー・テーマ対応）, false = BrushTextPrimary。
+/// 要チェック項目の実行済み表示に使用。
+/// </summary>
+[ValueConversion(typeof(bool), typeof(Brush))]
+public class ExecutedBrushConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (value is true)
+            return Application.Current.TryFindResource("BrushTextMuted") as Brush
+                   ?? new SolidColorBrush(Color.FromRgb(0x99, 0x99, 0x99));
+        return Application.Current.TryFindResource("BrushTextPrimary") as Brush
+               ?? new SolidColorBrush(Color.FromRgb(0xF0, 0xF0, 0xF0));
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        => throw new NotImplementedException();
+}
+
+/// <summary>
 /// bool 逆変換（true → false, false → true）
 /// IsEnabled 等の bool プロパティで使用
 /// </summary>

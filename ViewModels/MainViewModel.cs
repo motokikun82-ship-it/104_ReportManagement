@@ -103,10 +103,10 @@ public partial class MainViewModel : ObservableObject
         // 過去の未完了タスクを今日へ引き継ぐ（元の日付を保持）
         _db.CarryOverIncompleteTodos(today);
 
-        // 当日分が未生成ならテンプレートから自動生成
+        // 不足しているテンプレート項目があれば先頭に自動追加（重複スキップ）
         bool generated = _db.AutoGenerateFromTemplate(today);
         if (generated)
-            SetStatus("テンプレートから本日の日報を自動生成しました。");
+            SetStatus("テンプレートの不足分を先頭に追加しました。");
 
         LoadEntriesForDate(today);
         Todo.LoadForDate(today);
@@ -285,17 +285,19 @@ public partial class MainViewModel : ObservableObject
         SetStatus("突発メモを追加しました。");
     }
 
-    /// <summary>選択中のテンプレートグループの全項目を当日に追加する。</summary>
+    /// <summary>選択中のテンプレートグループの未登録項目を当日の先頭に追加する（重複スキップ）。</summary>
     [RelayCommand(CanExecute = nameof(CanAddFromTemplate))]
     private void AddFromTemplate()
     {
         if (SelectedTemplateGroup == null) return;
-        _db.AddTemplateGroupToDate(SelectedTemplateGroup.Id, SelectedDate);
+        int added = _db.AddTemplateGroupToDate(SelectedTemplateGroup.Id, SelectedDate);
         // 再読み込みして反映
         LoadEntriesForDate(SelectedDate);
         // カレンダーのマーカーを更新
         Calendar.RefreshCells();
-        SetStatus($"「{SelectedTemplateGroup.GroupName}」の項目を追加しました。");
+        SetStatus(added > 0
+            ? $"「{SelectedTemplateGroup.GroupName}」の不足分 {added} 件を先頭に追加しました。"
+            : $"「{SelectedTemplateGroup.GroupName}」は既に全て登録済みです。");
     }
 
     private bool CanAddFromTemplate() => SelectedTemplateGroup != null;

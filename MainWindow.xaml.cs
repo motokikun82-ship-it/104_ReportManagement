@@ -1,7 +1,9 @@
+using System.ComponentModel;
 using System.IO;
 using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media.Imaging;
+using ReportManagement.Services;
 using ReportManagement.ViewModels;
 using ReportManagement.Views;
 
@@ -50,6 +52,26 @@ public partial class MainWindow : Window
     /// <summary>閉じるボタン。</summary>
     private void BtnClose_Click(object sender, RoutedEventArgs e)
         => Close();
+
+    /// <summary>
+    /// アプリ終了前に当日の未実行チェック項目があれば確認を促す。
+    /// キャンセルされた場合は終了を中止する。
+    /// </summary>
+    private void Window_Closing(object? sender, CancelEventArgs e)
+    {
+        string today = DateTime.Today.ToString("yyyy-MM-dd");
+        var names = DatabaseService.Instance.GetUnexecutedItemNames(today);
+        if (names.Count == 0) return;
+
+        var result = MessageBox.Show(
+            $"本日の未実行項目が {names.Count} 件あります。\n・" + string.Join("\n・", names) +
+            "\n\nこのまま終了しますか？（未実行項目は集計に含まれません）",
+            "未実行項目の確認",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning);
+        if (result != MessageBoxResult.Yes)
+            e.Cancel = true;
+    }
 
     /// <summary>最大化と通常サイズを切り替える。</summary>
     private void ToggleMaximize()

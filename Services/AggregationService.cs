@@ -22,7 +22,7 @@ public class AggregationService
         return QueryAggregation(
             "SELECT ItemName, strftime('%Y-%m', EntryDate) AS Period, SUM(Count) AS TotalCount " +
             "FROM DailyEntries " +
-            "WHERE EntryDate >= @Start AND EntryDate <= @End AND IsCountable = 1 " +
+            "WHERE EntryDate >= @Start AND EntryDate <= @End AND IsCountable = 1 AND (ShowCheck = 0 OR IsExecuted = 1) " +
             "GROUP BY ItemName, Period " +
             "ORDER BY ItemName, Period",
             startDate, endDate);
@@ -33,7 +33,7 @@ public class AggregationService
         return QueryAggregation(
             "SELECT ItemName, strftime('%Y', EntryDate) AS Period, SUM(Count) AS TotalCount " +
             "FROM DailyEntries " +
-            "WHERE EntryDate >= @Start AND EntryDate <= @End AND IsCountable = 1 " +
+            "WHERE EntryDate >= @Start AND EntryDate <= @End AND IsCountable = 1 AND (ShowCheck = 0 OR IsExecuted = 1) " +
             "GROUP BY ItemName, Period " +
             "ORDER BY ItemName, Period",
             startDate, endDate);
@@ -44,7 +44,7 @@ public class AggregationService
         return QueryAggregation(
             "SELECT ItemName, EntryDate AS Period, SUM(Count) AS TotalCount " +
             "FROM DailyEntries " +
-            "WHERE EntryDate >= @Start AND EntryDate <= @End AND IsCountable = 1 " +
+            "WHERE EntryDate >= @Start AND EntryDate <= @End AND IsCountable = 1 AND (ShowCheck = 0 OR IsExecuted = 1) " +
             "GROUP BY ItemName, Period " +
             "ORDER BY ItemName, Period",
             startDate, endDate);
@@ -57,7 +57,7 @@ public class AggregationService
             "  DATE(EntryDate, '-' || CAST((CAST(strftime('%w', EntryDate) AS INTEGER) + 6) % 7 AS TEXT) || ' days') AS Period, " +
             "  SUM(Count) AS TotalCount " +
             "FROM DailyEntries " +
-            "WHERE EntryDate >= @Start AND EntryDate <= @End AND IsCountable = 1 " +
+            "WHERE EntryDate >= @Start AND EntryDate <= @End AND IsCountable = 1 AND (ShowCheck = 0 OR IsExecuted = 1) " +
             "GROUP BY ItemName, Period " +
             "ORDER BY ItemName, Period",
             startDate, endDate);

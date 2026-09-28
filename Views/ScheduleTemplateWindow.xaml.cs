@@ -202,7 +202,9 @@ public partial class ScheduleTemplateWindow : Window
                     Count = item.DefaultCount,
                     IsCountable = item.IsCountable,
                     Note = string.Empty,
-                    SortOrder = sortOrder   // テンプレートの固定値ではなく動的に計算した値を使用
+                    SortOrder = sortOrder,   // テンプレートの固定値ではなく動的に計算した値を使用
+                    IsExecuted = !item.NeedCheck,
+                    ShowCheck = item.NeedCheck,
                 };
                 _db.InsertEntry(entry);
                 inserted++;

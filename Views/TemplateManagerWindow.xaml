@@ -60,6 +60,7 @@
                         <DataGridTextColumn Header="表示順" Binding="{Binding SortOrder}" Width="60"/>
                         <DataGridTextColumn Header="項目名" Binding="{Binding ItemName}" Width="*"/>
                         <DataGridCheckBoxColumn Header="件数管理" Binding="{Binding IsCountable}" Width="80"/>
+                        <DataGridCheckBoxColumn Header="要チェック" Binding="{Binding NeedCheck, UpdateSourceTrigger=PropertyChanged}" Width="80"/>
                         <DataGridTextColumn Header="初期件数" Binding="{Binding DefaultCount}" Width="80"/>
                         <DataGridTemplateColumn Width="60">
                             <DataGridTemplateColumn.CellTemplate>

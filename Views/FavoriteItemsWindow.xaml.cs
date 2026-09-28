@@ -86,6 +86,8 @@ public partial class FavoriteItemsWindow : Window
                     IsCountable = item.IsCountable,
                     Note        = "",
                     SortOrder   = baseSort,
+                    IsExecuted  = !item.NeedCheck,
+                    ShowCheck   = item.NeedCheck,
                     CreatedAt   = now,
                     UpdatedAt   = now,
                 });
@@ -112,6 +114,8 @@ public partial class FavoriteItemsWindow : Window
                     IsCountable = tmpl?.IsCountable ?? true,
                     Note        = "",
                     SortOrder   = baseSort,
+                    IsExecuted  = tmpl == null || !tmpl.NeedCheck,
+                    ShowCheck   = tmpl?.NeedCheck ?? false,
                     CreatedAt   = now,
                     UpdatedAt   = now,
                 });

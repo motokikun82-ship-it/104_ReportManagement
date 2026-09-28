@@ -60,6 +60,8 @@ public class DatabaseService
                 IsCountable INTEGER NOT NULL DEFAULT 1,
                 Note        TEXT    NOT NULL DEFAULT '',
                 SortOrder   INTEGER NOT NULL DEFAULT 0,
+                IsExecuted  INTEGER NOT NULL DEFAULT 1,
+                ShowCheck   INTEGER NOT NULL DEFAULT 0,
                 CreatedAt   TEXT    NOT NULL DEFAULT '',
                 UpdatedAt   TEXT    NOT NULL DEFAULT ''
             );
@@ -80,6 +82,7 @@ public class DatabaseService
                 DefaultCount INTEGER NOT NULL DEFAULT 0,
                 IsCountable  INTEGER NOT NULL DEFAULT 1,
                 SortOrder    INTEGER NOT NULL DEFAULT 0,
+                NeedCheck    INTEGER NOT NULL DEFAULT 0,
                 FOREIGN KEY (GroupId) REFERENCES TemplateGroups(Id) ON DELETE CASCADE
             );
 
@@ -143,6 +146,9 @@ public class DatabaseService
         // 既存DBのToDoタスクに StartTime/EndTime/Description カラムがなければ追加
         ApplyTodoMigration(conn);
 
+        // 既存DBに実行チェック用カラムがなければ追加
+        ApplyExecutedMigration(conn);
+
         // 過去のバグでStartTimeにCreatedAtが入ってしまったデータを修復
         FixCorruptedStartTime(conn);
     }
@@ -172,6 +178,35 @@ public class DatabaseService
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"ApplyTodoMigration エラー: {ex.Message}");
+                throw;
+            }
+        }
+    }
+
+    private static void ApplyExecutedMigration(SqliteConnection conn)
+    {
+        // DailyEntries: IsExecuted（既定1=実行済み扱いで既存集計を維持）、ShowCheck（既定0=非表示）
+        // TemplateItems: NeedCheck（既定0=チェック不要）
+        foreach (var (table, colDef) in new[]
+        {
+            ("DailyEntries", "IsExecuted  INTEGER NOT NULL DEFAULT 1"),
+            ("DailyEntries", "ShowCheck   INTEGER NOT NULL DEFAULT 0"),
+            ("TemplateItems", "NeedCheck   INTEGER NOT NULL DEFAULT 0"),
+        })
+        {
+            try
+            {
+                using var alter = conn.CreateCommand();
+                alter.CommandText = $"ALTER TABLE {table} ADD COLUMN {colDef};";
+                alter.ExecuteNonQuery();
+            }
+            catch (SqliteException ex) when (ex.Message.Contains("duplicate column name"))
+            {
+                // カラムが既に存在する場合は何もしない
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"ApplyExecutedMigration エラー: {ex.Message}");
                 throw;
             }
         }
@@ -386,7 +421,7 @@ public class DatabaseService
         using var conn = CreateConnection();
         using var cmd = conn.CreateCommand();
         cmd.CommandText = @"
-            SELECT Id, EntryDate, ItemName, Count, IsCountable, Note, SortOrder, CreatedAt, UpdatedAt
+            SELECT Id, EntryDate, ItemName, Count, IsCountable, Note, SortOrder, IsExecuted, ShowCheck, CreatedAt, UpdatedAt
             FROM DailyEntries
             WHERE EntryDate = $date
             ORDER BY SortOrder, Id;
@@ -398,6 +433,28 @@ public class DatabaseService
             list.Add(ReadDailyEntry(reader));
         }
         return list;
+    }
+
+    /// <summary>指定日付の最小SortOrderを取得する（エントリーがない場合はnull）。</summary>
+    /// <param name="date">対象日付</param>
+    /// <param name="isCountable">true=件数ありグループ内の最小値、false=メモグループ内の最小値、null=全体</param>
+    public int? GetMinSortOrderForDate(string date, bool? isCountable = null)
+    {
+        using var conn = CreateConnection();
+        using var cmd = conn.CreateCommand();
+        if (isCountable.HasValue)
+        {
+            cmd.CommandText = "SELECT MIN(SortOrder) FROM DailyEntries WHERE EntryDate = $date AND IsCountable = $cnt;";
+            cmd.Parameters.AddWithValue("$cnt", isCountable.Value ? 1 : 0);
+        }
+        else
+        {
+            cmd.CommandText = "SELECT MIN(SortOrder) FROM DailyEntries WHERE EntryDate = $date;";
+        }
+        cmd.Parameters.AddWithValue("$date", date);
+        var val = cmd.ExecuteScalar();
+        if (val == null || val == DBNull.Value) return null;
+        return Convert.ToInt32(val);
     }
 
     /// <summary>指定日付の最大SortOrderを取得する（エントリーがない場合は0）。</summary>
@@ -427,7 +484,7 @@ public class DatabaseService
         using var conn = CreateConnection();
         using var cmd = conn.CreateCommand();
         cmd.CommandText = @"
-            SELECT Id, EntryDate, ItemName, Count, IsCountable, Note, SortOrder, CreatedAt, UpdatedAt
+            SELECT Id, EntryDate, ItemName, Count, IsCountable, Note, SortOrder, IsExecuted, ShowCheck, CreatedAt, UpdatedAt
             FROM DailyEntries
             ORDER BY EntryDate, SortOrder, Id;
         ";
@@ -479,9 +536,9 @@ public class DatabaseService
         string now = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
         cmd.CommandText = @"
             INSERT INTO DailyEntries
-                (EntryDate, ItemName, Count, IsCountable, Note, SortOrder, CreatedAt, UpdatedAt)
+                (EntryDate, ItemName, Count, IsCountable, Note, SortOrder, IsExecuted, ShowCheck, CreatedAt, UpdatedAt)
             VALUES
-                ($date, $name, $count, $cnt, $note, $sort, $now, $now);
+                ($date, $name, $count, $cnt, $note, $sort, $exec, $show, $now, $now);
             SELECT last_insert_rowid();
         ";
         cmd.Parameters.AddWithValue("$date",  entry.EntryDate);
@@ -490,6 +547,8 @@ public class DatabaseService
         cmd.Parameters.AddWithValue("$cnt",   entry.IsCountable ? 1 : 0);
         cmd.Parameters.AddWithValue("$note",  entry.Note);
         cmd.Parameters.AddWithValue("$sort",  entry.SortOrder);
+        cmd.Parameters.AddWithValue("$exec",  entry.IsExecuted ? 1 : 0);
+        cmd.Parameters.AddWithValue("$show",  entry.ShowCheck ? 1 : 0);
         cmd.Parameters.AddWithValue("$now",   now);
         return Convert.ToInt32(cmd.ExecuteScalar());
     }
@@ -506,6 +565,8 @@ public class DatabaseService
                 IsCountable = $cnt,
                 Note        = $note,
                 SortOrder   = $sort,
+                IsExecuted  = $exec,
+                ShowCheck   = $show,
                 UpdatedAt   = $now
             WHERE Id = $id;
         ";
@@ -515,6 +576,8 @@ public class DatabaseService
         cmd.Parameters.AddWithValue("$cnt",   entry.IsCountable ? 1 : 0);
         cmd.Parameters.AddWithValue("$note",  entry.Note);
         cmd.Parameters.AddWithValue("$sort",  entry.SortOrder);
+        cmd.Parameters.AddWithValue("$exec",  entry.IsExecuted ? 1 : 0);
+        cmd.Parameters.AddWithValue("$show",  entry.ShowCheck ? 1 : 0);
         cmd.Parameters.AddWithValue("$now",   DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
         cmd.ExecuteNonQuery();
     }
@@ -530,20 +593,13 @@ public class DatabaseService
     }
 
     /// <summary>
-    /// 指定日付の日報エントリーが0件の場合、デフォルトテンプレートグループから
-    /// 全項目を自動生成する。アプリ起動時に呼び出す。
+    /// デフォルトテンプレートグループの項目を当日に自動生成する。アプリ起動時に呼び出す。
+    /// 既存エントリーがあっても、未登録のテンプレート項目だけを先頭に挿入する（重複スキップ）。
     /// </summary>
-    /// <returns>実際に生成した場合 true、既にデータがある場合 false</returns>
+    /// <returns>1件以上挿入した場合 true、追加なしの場合 false</returns>
     public bool AutoGenerateFromTemplate(string date)
     {
         using var conn = CreateConnection();
-
-        // 既にエントリーがあれば何もしない
-        using var checkCmd = conn.CreateCommand();
-        checkCmd.CommandText = "SELECT COUNT(*) FROM DailyEntries WHERE EntryDate = $date;";
-        checkCmd.Parameters.AddWithValue("$date", date);
-        long existing = (long)(checkCmd.ExecuteScalar() ?? 0L);
-        if (existing > 0) return false;
 
         // デフォルトテンプレートグループを取得
         using var grpCmd = conn.CreateCommand();
@@ -560,7 +616,7 @@ public class DatabaseService
         // そのグループの項目を取得して日報に追加
         using var itemCmd = conn.CreateCommand();
         itemCmd.CommandText = @"
-            SELECT ItemName, DefaultCount, IsCountable, SortOrder
+            SELECT ItemName, DefaultCount, IsCountable, SortOrder, NeedCheck
             FROM TemplateItems
             WHERE GroupId = $gid
             ORDER BY SortOrder;
@@ -568,31 +624,127 @@ public class DatabaseService
         itemCmd.Parameters.AddWithValue("$gid", groupId);
         string now = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
 
-        using var reader = itemCmd.ExecuteReader();
-        while (reader.Read())
+        var templateRows = new List<(string Name, int Count, int Countable, int Sort, int NeedCheck)>();
+        using (var reader = itemCmd.ExecuteReader())
         {
-            using var insertCmd = conn.CreateCommand();
-            insertCmd.CommandText = @"
-                INSERT INTO DailyEntries
-                    (EntryDate, ItemName, Count, IsCountable, Note, SortOrder, CreatedAt, UpdatedAt)
-                VALUES ($date, $name, $count, $cnt, '', $sort, $now, $now);
-            ";
-            insertCmd.Parameters.AddWithValue("$date",  date);
-            insertCmd.Parameters.AddWithValue("$name",  reader.GetString(0));
-            insertCmd.Parameters.AddWithValue("$count", reader.GetInt32(1));
-            insertCmd.Parameters.AddWithValue("$cnt",   reader.GetInt32(2));
-            insertCmd.Parameters.AddWithValue("$sort",  reader.GetInt32(3));
-            insertCmd.Parameters.AddWithValue("$now",   now);
-            insertCmd.ExecuteNonQuery();
+            while (reader.Read())
+                templateRows.Add((reader.GetString(0), reader.GetInt32(1), reader.GetInt32(2), reader.GetInt32(3), reader.GetInt32(4)));
         }
+        if (templateRows.Count == 0) return false;
+
+        var existingNames = new HashSet<string>(GetEntriesByDate(date).Select(e => e.ItemName));
+        var missing = templateRows.Where(t => !existingNames.Contains(t.Name)).ToList();
+        if (missing.Count == 0) return false;
+
+        // 既存が0件なら従来通りテンプレートのSortOrderで挿入
+        if (existingNames.Count == 0)
+        {
+            foreach (var t in missing)
+                InsertEntryRow(conn, date, t, t.Sort, now);
+            return true;
+        }
+
+        // 既存あり：不足分だけ先頭に挿入（件数あり／メモの各グループで既存最小値より前）
+        InsertEntriesAtTop(conn, date, missing, now);
         return true;
+    }
+
+    /// <summary>
+    /// 指定行を当日の先頭に挿入する。件数あり・メモの各グループ内で既存最小値より前に配置し、
+    /// テンプレート順を保つ。既存行のSortOrderは変更しない。
+    /// </summary>
+    private static void InsertEntriesAtTop(
+        Microsoft.Data.Sqlite.SqliteConnection conn,
+        string date,
+        List<(string Name, int Count, int Countable, int Sort, int NeedCheck)> rows,
+        string now)
+    {
+        var countable = rows.Where(r => r.Countable == 1).ToList();
+        var memos = rows.Where(r => r.Countable != 1).ToList();
+
+        int? minCountable = GetMinSortOrder(conn, date, true);
+        int? minMemo = GetMinSortOrder(conn, date, false);
+
+        int next = minCountable.HasValue ? minCountable.Value - countable.Count * 10 : 0;
+        foreach (var t in countable)
+        {
+            InsertEntryRow(conn, date, t, next, now);
+            next += 10;
+        }
+
+        next = minMemo.HasValue ? minMemo.Value - memos.Count * 10 : 0;
+        foreach (var t in memos)
+        {
+            InsertEntryRow(conn, date, t, next, now);
+            next += 10;
+        }
+    }
+
+    private static int? GetMinSortOrder(Microsoft.Data.Sqlite.SqliteConnection conn, string date, bool countable)
+    {
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT MIN(SortOrder) FROM DailyEntries WHERE EntryDate = $date AND IsCountable = $cnt;";
+        cmd.Parameters.AddWithValue("$date", date);
+        cmd.Parameters.AddWithValue("$cnt", countable ? 1 : 0);
+        var val = cmd.ExecuteScalar();
+        if (val == null || val == DBNull.Value) return null;
+        return Convert.ToInt32(val);
+    }
+
+    private static void InsertEntryRow(
+        Microsoft.Data.Sqlite.SqliteConnection conn,
+        string date,
+        (string Name, int Count, int Countable, int Sort, int NeedCheck) t,
+        int sortOrder,
+        string now)
+    {
+        using var insertCmd = conn.CreateCommand();
+        insertCmd.CommandText = @"
+            INSERT INTO DailyEntries
+                (EntryDate, ItemName, Count, IsCountable, Note, SortOrder, IsExecuted, ShowCheck, CreatedAt, UpdatedAt)
+            VALUES ($date, $name, $count, $cnt, '', $sort, $exec, $show, $now, $now);
+        ";
+        insertCmd.Parameters.AddWithValue("$date",  date);
+        insertCmd.Parameters.AddWithValue("$name",  t.Name);
+        insertCmd.Parameters.AddWithValue("$count", t.Count);
+        insertCmd.Parameters.AddWithValue("$cnt",   t.Countable);
+        insertCmd.Parameters.AddWithValue("$sort",  sortOrder);
+        // 要チェック項目は未実行・チェック表示で登録、それ以外は実行済み扱い・非表示
+        insertCmd.Parameters.AddWithValue("$exec",  t.NeedCheck == 1 ? 0 : 1);
+        insertCmd.Parameters.AddWithValue("$show",  t.NeedCheck);
+        insertCmd.Parameters.AddWithValue("$now",   now);
+        insertCmd.ExecuteNonQuery();
     }
 
     // ─── 検索 ────────────────────────────────────────────────────
 
+    /// <summary>指定日付の未実行チェック項目の件数を返す（終了時確認用）。</summary>
+    public int GetUnexecutedCount(string date)
+    {
+        using var conn = CreateConnection();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT COUNT(*) FROM DailyEntries WHERE EntryDate = $date AND ShowCheck = 1 AND IsExecuted = 0;";
+        cmd.Parameters.AddWithValue("$date", date);
+        return Convert.ToInt32(cmd.ExecuteScalar());
+    }
+
+    /// <summary>指定日付の未実行チェック項目名の一覧を返す（終了時確認用）。</summary>
+    public List<string> GetUnexecutedItemNames(string date)
+    {
+        var list = new List<string>();
+        using var conn = CreateConnection();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT ItemName FROM DailyEntries WHERE EntryDate = $date AND ShowCheck = 1 AND IsExecuted = 0 ORDER BY SortOrder;";
+        cmd.Parameters.AddWithValue("$date", date);
+        using var reader = cmd.ExecuteReader();
+        while (reader.Read()) list.Add(reader.GetString(0));
+        return list;
+    }
+
     /// <summary>
     /// 特定の項目名で過去のデータを検索する。
     /// 実施した日付と合計件数の一覧を返す（集計用）。
+    /// 未実行の要チェック項目は除外する。
     /// </summary>
     public List<(string Date, string ItemName, int TotalCount)> SearchByItemName(string itemName)
     {
@@ -603,6 +755,7 @@ public class DatabaseService
             SELECT EntryDate, ItemName, SUM(Count) as TotalCount
             FROM DailyEntries
             WHERE ItemName LIKE $name
+              AND (ShowCheck = 0 OR IsExecuted = 1)
             GROUP BY EntryDate, ItemName
             ORDER BY EntryDate DESC;
         ";
@@ -624,7 +777,7 @@ public class DatabaseService
         using var conn = CreateConnection();
         using var cmd = conn.CreateCommand();
         cmd.CommandText = @"
-            SELECT Id, EntryDate, ItemName, Count, IsCountable, Note, SortOrder, CreatedAt, UpdatedAt
+            SELECT Id, EntryDate, ItemName, Count, IsCountable, Note, SortOrder, IsExecuted, ShowCheck, CreatedAt, UpdatedAt
             FROM DailyEntries
             WHERE ItemName LIKE $kw OR Note LIKE $kw
             ORDER BY EntryDate DESC, SortOrder;
@@ -673,8 +826,10 @@ public class DatabaseService
         IsCountable = r.GetInt32(4) == 1,
         Note        = r.GetString(5),
         SortOrder   = r.GetInt32(6),
-        CreatedAt   = r.GetString(7),
-        UpdatedAt   = r.GetString(8),
+        IsExecuted  = r.GetInt32(7) == 1,
+        ShowCheck   = r.GetInt32(8) == 1,
+        CreatedAt   = r.GetString(9),
+        UpdatedAt   = r.GetString(10),
     };
 
     /// <summary>
@@ -815,7 +970,7 @@ public class DatabaseService
         {
             using var cmd = conn.CreateCommand();
             cmd.CommandText = @"
-                SELECT Id, GroupId, ItemName, DefaultCount, IsCountable, SortOrder
+                SELECT Id, GroupId, ItemName, DefaultCount, IsCountable, SortOrder, NeedCheck
                 FROM TemplateItems
                 WHERE GroupId = $gid
                 ORDER BY SortOrder;
@@ -832,6 +987,7 @@ public class DatabaseService
                     DefaultCount = reader.GetInt32(3),
                     IsCountable  = reader.GetInt32(4) == 1,
                     SortOrder    = reader.GetInt32(5),
+                    NeedCheck    = reader.GetInt32(6) == 1,
                 });
             }
         }
@@ -848,7 +1004,7 @@ public class DatabaseService
         using var conn = CreateConnection();
         using var cmd = conn.CreateCommand();
         cmd.CommandText = @"
-            SELECT Id, GroupId, ItemName, DefaultCount, IsCountable, SortOrder
+            SELECT Id, GroupId, ItemName, DefaultCount, IsCountable, SortOrder, NeedCheck
             FROM TemplateItems
             WHERE ItemName = $name
             LIMIT 1;
@@ -865,6 +1021,7 @@ public class DatabaseService
                 DefaultCount = reader.GetInt32(3),
                 IsCountable  = reader.GetInt32(4) == 1,
                 SortOrder    = reader.GetInt32(5),
+                NeedCheck    = reader.GetInt32(6) == 1,
             };
         }
         return null;
@@ -876,8 +1033,8 @@ public class DatabaseService
         using var conn = CreateConnection();
         using var cmd = conn.CreateCommand();
         cmd.CommandText = @"
-            INSERT INTO TemplateItems (GroupId, ItemName, DefaultCount, IsCountable, SortOrder)
-            VALUES ($gid, $name, $def, $cnt, $sort);
+            INSERT INTO TemplateItems (GroupId, ItemName, DefaultCount, IsCountable, SortOrder, NeedCheck)
+            VALUES ($gid, $name, $def, $cnt, $sort, $need);
             SELECT last_insert_rowid();
         ";
         cmd.Parameters.AddWithValue("$gid",  item.GroupId);
@@ -885,6 +1042,7 @@ public class DatabaseService
         cmd.Parameters.AddWithValue("$def",  item.DefaultCount);
         cmd.Parameters.AddWithValue("$cnt",  item.IsCountable ? 1 : 0);
         cmd.Parameters.AddWithValue("$sort", item.SortOrder);
+        cmd.Parameters.AddWithValue("$need", item.NeedCheck ? 1 : 0);
         return Convert.ToInt32(cmd.ExecuteScalar());
     }
 
@@ -899,7 +1057,8 @@ public class DatabaseService
                 ItemName     = $name,
                 DefaultCount = $def,
                 IsCountable  = $cnt,
-                SortOrder    = $sort
+                SortOrder    = $sort,
+                NeedCheck    = $need
             WHERE Id = $id;
         ";
         cmd.Parameters.AddWithValue("$id",   item.Id);
@@ -908,6 +1067,7 @@ public class DatabaseService
         cmd.Parameters.AddWithValue("$def",  item.DefaultCount);
         cmd.Parameters.AddWithValue("$cnt",  item.IsCountable ? 1 : 0);
         cmd.Parameters.AddWithValue("$sort", item.SortOrder);
+        cmd.Parameters.AddWithValue("$need", item.NeedCheck ? 1 : 0);
         cmd.ExecuteNonQuery();
     }
 
@@ -922,51 +1082,37 @@ public class DatabaseService
     }
 
     /// <summary>
-    /// 指定グループのテンプレート項目を当日の日報に追加する（手動呼び出し用）。
-    /// IsCountableグループごとに最大SortOrderを取得し、それぞれのグループの末尾に追加する。
+    /// 指定グループのテンプレート項目を当日の日報の先頭に追加する（手動呼び出し用）。
+    /// 同日・同名の項目が既にある場合はスキップする（重複防止）。
     /// </summary>
-    public void AddTemplateGroupToDate(int groupId, string date)
+    /// <returns>実際に追加した件数</returns>
+    public int AddTemplateGroupToDate(int groupId, string date)
     {
         var items = GetItemsByGroupId(groupId);
         string now = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
 
         using var conn = CreateConnection();
 
-        // IsCountableグループごとの最大SortOrderを取得（既存の安全なメソッドを使用）
-        int maxCountable = GetMaxSortOrderForDate(date, true);
-        int maxMemo = GetMaxSortOrderForDate(date, false);
+        // 同日・同名は重複スキップ
+        var existingNames = new HashSet<string>(GetEntriesByDate(date).Select(e => e.ItemName));
+        var missing = items.Where(i => !existingNames.Contains(i.ItemName)).ToList();
+        if (missing.Count == 0) return 0;
 
-        int nextCountable = maxCountable + 10;
-        int nextMemo = maxMemo + 10;
+        var rows = missing
+            .Select(i => (Name: i.ItemName, Count: i.DefaultCount, Countable: i.IsCountable ? 1 : 0, Sort: i.SortOrder, NeedCheck: i.NeedCheck ? 1 : 0))
+            .ToList();
 
-        foreach (var item in items)
+        // 既存が0件ならテンプレートのSortOrderのまま挿入
+        if (existingNames.Count == 0)
         {
-            int sortOrder;
-            if (item.IsCountable)
-            {
-                nextCountable += 10;
-                sortOrder = nextCountable;
-            }
-            else
-            {
-                nextMemo += 10;
-                sortOrder = nextMemo;
-            }
-
-            using var insertCmd = conn.CreateCommand();
-            insertCmd.CommandText = @"
-                INSERT INTO DailyEntries
-                    (EntryDate, ItemName, Count, IsCountable, Note, SortOrder, CreatedAt, UpdatedAt)
-                VALUES ($date, $name, $count, $cnt, '', $sort, $now, $now);
-            ";
-            insertCmd.Parameters.AddWithValue("$date",  date);
-            insertCmd.Parameters.AddWithValue("$name",  item.ItemName);
-            insertCmd.Parameters.AddWithValue("$count", item.DefaultCount);
-            insertCmd.Parameters.AddWithValue("$cnt",   item.IsCountable ? 1 : 0);
-            insertCmd.Parameters.AddWithValue("$sort",  sortOrder);
-            insertCmd.Parameters.AddWithValue("$now",   DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
-            insertCmd.ExecuteNonQuery();
+            foreach (var t in rows)
+                InsertEntryRow(conn, date, t, t.Sort, now);
+            return rows.Count;
         }
+
+        // 既存あり：先頭に挿入
+        InsertEntriesAtTop(conn, date, rows, now);
+        return rows.Count;
     }
 
     // ═══════════════════════════════════════════════════════════════

@@ -31,4 +31,10 @@ public class TemplateItem
 
     /// <summary>グループ内での表示順（小さい数値が上）</summary>
     public int SortOrder { get; set; } = 0;
+
+    /// <summary>
+    /// 実行チェックが必要かどうか。
+    /// true の項目は日報生成時にチェックボックス付き（未実行状態）で登録される。
+    /// </summary>
+    public bool NeedCheck { get; set; } = false;
 }

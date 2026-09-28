@@ -11,7 +11,8 @@
         WindowStartupLocation="CenterScreen"
         WindowStyle="None"
         AllowsTransparency="False"
-        ResizeMode="CanResize">
+        ResizeMode="CanResize"
+        Closing="Window_Closing">
 
     <!-- カスタムタイトルバー用 WindowChrome -->
     <Window.Style>
@@ -41,6 +42,7 @@
         <conv:BoolToExpandIconConverter x:Key="BoolToExpandIcon"/>
         <conv:HolidayBrushConverter x:Key="HolidayBrushConv"/>
         <conv:StringEmptyToNullConverter x:Key="StrEmpToNull"/>
+        <conv:ExecutedBrushConverter x:Key="ExecutedBrushConv"/>
     </Window.Resources>
 
     <Grid Background="{StaticResource BrushBgPrimary}">
@@ -191,6 +193,7 @@
                                         <!-- 通常項目（件数あり） -->
                                         <Grid Visibility="{Binding IsCountable, Converter={StaticResource BoolToVis}}" Margin="6,3">
                                             <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
                                                 <ColumnDefinition Width="2*"/>
                                                 <ColumnDefinition Width="Auto"/>
                                                 <ColumnDefinition Width="Auto"/>
@@ -199,11 +202,20 @@
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
 
-                                            <!-- 項目名 -->
-                                            <TextBox Grid.Column="0" Text="{Binding ItemName, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,6,0" FontSize="13" FontWeight="Bold" VerticalAlignment="Center"/>
+                                            <!-- 実行チェック（要チェック項目のみ表示） -->
+                                            <CheckBox Grid.Column="0" IsChecked="{Binding IsExecuted}" VerticalAlignment="Center" Margin="0,0,6,0"
+                                                      Visibility="{Binding ShowCheck, Converter={StaticResource BoolToVis}}" ToolTip="実行済みにする"/>
+
+                                            <!-- 項目名（実行済みは薄グレー） -->
+                                            <TextBox Grid.Column="1" Text="{Binding ItemName, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,6,0" FontSize="13" FontWeight="Bold" VerticalAlignment="Center"
+                                                     Foreground="{Binding IsDimmed, Converter={StaticResource ExecutedBrushConv}}"/>
+
+                                            <!-- 未実行警告 -->
+                                            <TextBlock Grid.Column="1" Text="⚠" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,10,0" FontSize="12"
+                                                       Visibility="{Binding ShowWarning, Converter={StaticResource BoolToVis}}" ToolTip="未実行です"/>
 
                                             <!-- 件数操作 -->
-                                            <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="0,0,6,0">
+                                            <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="0,0,6,0">
                                                 <Button Style="{StaticResource BtnIcon}" Command="{Binding DecrementCommand}" Background="{StaticResource BrushBgHover}" Padding="2">➖</Button>
                                                 <TextBox Text="{Binding Count, UpdateSourceTrigger=PropertyChanged}" Width="40" TextAlignment="Center" Margin="4,0"/>
                                                 <Button Style="{StaticResource BtnIcon}" Command="{Binding IncrementCommand}" Background="{StaticResource BrushBgHover}" Padding="2">➕</Button>
@@ -211,19 +223,19 @@
                                             </StackPanel>
 
                                             <!-- メモアイコン -->
-                                            <TextBlock Grid.Column="2" Text="📝" VerticalAlignment="Center" Margin="0,0,3,0" Foreground="{StaticResource BrushTextMuted}" FontSize="12"/>
-                                            
+                                            <TextBlock Grid.Column="3" Text="📝" VerticalAlignment="Center" Margin="0,0,3,0" Foreground="{StaticResource BrushTextMuted}" FontSize="12"/>
+
                                             <!-- メモ入力 -->
-                                            <TextBox Grid.Column="3" Text="{Binding Note, UpdateSourceTrigger=PropertyChanged}" ToolTip="補足メモ" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                            <TextBox Grid.Column="4" Text="{Binding Note, UpdateSourceTrigger=PropertyChanged}" ToolTip="補足メモ" Margin="0,0,6,0" VerticalAlignment="Center"/>
 
                                             <!-- 移動ボタン -->
-                                            <StackPanel Grid.Column="4" Orientation="Horizontal" Margin="0,0,4,0">
+                                            <StackPanel Grid.Column="5" Orientation="Horizontal" Margin="0,0,4,0">
                                                 <Button Style="{StaticResource BtnIcon}" Command="{Binding MoveUpCommand}" FontSize="11" Padding="1" ToolTip="上に移動">↑</Button>
                                                 <Button Style="{StaticResource BtnIcon}" Command="{Binding MoveDownCommand}" FontSize="11" Padding="1" ToolTip="下に移動">↓</Button>
                                             </StackPanel>
 
                                             <!-- 削除ボタン -->
-                                            <Button Grid.Column="5" Style="{StaticResource BtnDanger}" Command="{Binding RequestDeleteCommand}" Padding="4,2">🗑</Button>
+                                            <Button Grid.Column="6" Style="{StaticResource BtnDanger}" Command="{Binding RequestDeleteCommand}" Padding="4,2">🗑</Button>
                                         </Grid>
 
                                         <!-- メモ項目（件数なし・展開式） -->
@@ -236,24 +248,30 @@
                                             <Grid Grid.Row="0" Margin="6,3">
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="Auto"/>
                                                     <ColumnDefinition Width="*"/>
                                                     <ColumnDefinition Width="Auto"/>
                                                     <ColumnDefinition Width="Auto"/>
                                                 </Grid.ColumnDefinitions>
 
-                                                <CheckBox Grid.Column="0" IsChecked="{Binding IsExpanded}" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                                                
-                                                <!-- 項目名 -->
-                                                <TextBox Grid.Column="1" Text="{Binding ItemName, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,6,0" FontSize="13" FontWeight="Bold" VerticalAlignment="Center"/>
+                                                <CheckBox Grid.Column="0" IsChecked="{Binding IsExpanded}" VerticalAlignment="Center" Margin="0,0,6,0" ToolTip="内容の展開"/>
+
+                                                <!-- 実行チェック（要チェック項目のみ表示） -->
+                                                <CheckBox Grid.Column="1" IsChecked="{Binding IsExecuted}" VerticalAlignment="Center" Margin="0,0,6,0"
+                                                          Visibility="{Binding ShowCheck, Converter={StaticResource BoolToVis}}" ToolTip="実行済みにする"/>
+
+                                                <!-- 項目名（実行済みは薄グレー） -->
+                                                <TextBox Grid.Column="2" Text="{Binding ItemName, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,6,0" FontSize="13" FontWeight="Bold" VerticalAlignment="Center"
+                                                         Foreground="{Binding IsDimmed, Converter={StaticResource ExecutedBrushConv}}"/>
 
                                                 <!-- 移動ボタン -->
-                                                <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="0,0,4,0">
+                                                <StackPanel Grid.Column="3" Orientation="Horizontal" Margin="0,0,4,0">
                                                     <Button Style="{StaticResource BtnIcon}" Command="{Binding MoveUpCommand}" FontSize="11" Padding="1" ToolTip="上に移動">↑</Button>
                                                     <Button Style="{StaticResource BtnIcon}" Command="{Binding MoveDownCommand}" FontSize="11" Padding="1" ToolTip="下に移動">↓</Button>
                                                 </StackPanel>
 
                                                 <!-- 削除ボタン -->
-                                                <Button Grid.Column="3" Style="{StaticResource BtnDanger}" Command="{Binding RequestDeleteCommand}" Padding="4,2">🗑</Button>
+                                                <Button Grid.Column="4" Style="{StaticResource BtnDanger}" Command="{Binding RequestDeleteCommand}" Padding="4,2">🗑</Button>
                                             </Grid>
                                             <!-- 展開エリア -->
                                             <Border Grid.Row="1" Background="{StaticResource BrushBgSecondary}" CornerRadius="0,0,4,4" Padding="12,8" Margin="0,0,0,0"

@@ -200,6 +200,14 @@ public partial class TemplateManagerWindow : Window
                 textBox.GetBindingExpression(TextBox.TextProperty)?.UpdateSource();
             }
         }
+        else if (e.Column is DataGridCheckBoxColumn checkColumn)
+        {
+            var element = checkColumn.GetCellContent(e.Row.Item);
+            if (element is CheckBox checkBox)
+            {
+                checkBox.GetBindingExpression(CheckBox.IsCheckedProperty)?.UpdateSource();
+            }
+        }
 
         _db.UpdateTemplateItem(item);
     }
