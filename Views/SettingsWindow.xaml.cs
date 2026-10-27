@@ -152,6 +152,9 @@ public partial class SettingsWindow : Window
         // テーマを即時適用して再起動
         App.ApplyTheme(themeFile);
 
+        // 再起動時は未実行チェックの確認ダイアログを出さない
+        App.SuppressCloseCheck = true;
+
         // アプリケーションを再起動
         System.Diagnostics.Process.Start(
             System.Diagnostics.Process.GetCurrentProcess().MainModule!.FileName);

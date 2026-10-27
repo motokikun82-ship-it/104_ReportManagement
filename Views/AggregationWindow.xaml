@@ -101,9 +101,16 @@
                     <DataTemplate DataType="vm:ItemGroupViewModel">
                         <StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
-                                <Button Content="全選択" Command="{Binding SelectAllCommand}"
+                                <Button Content="全項目を選択"
+                                        Command="{Binding DataContext.SelectAllItemsCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                         Style="{StaticResource BtnSecondary}" Padding="8,3" Margin="0,0,4,0"/>
-                                <Button Content="全解除" Command="{Binding DeselectAllCommand}"
+                                <Button Content="全項目を解除"
+                                        Command="{Binding DataContext.DeselectAllItemsCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                        Style="{StaticResource BtnSecondary}" Padding="8,3" Margin="0,0,12,0"/>
+                                <TextBlock Text="│" VerticalAlignment="Center" Margin="0,0,12,0" Foreground="{StaticResource BrushTextSecondary}"/>
+                                <Button Content="グループ内全選択" Command="{Binding SelectAllCommand}"
+                                        Style="{StaticResource BtnSecondary}" Padding="8,3" Margin="0,0,4,0"/>
+                                <Button Content="グループ内全解除" Command="{Binding DeselectAllCommand}"
                                         Style="{StaticResource BtnSecondary}" Padding="8,3"/>
                             </StackPanel>
                             <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" CanContentScroll="False">

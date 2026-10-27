@@ -527,6 +527,32 @@ public partial class AggregationViewModel : ObservableObject
         }
     }
 
+    [RelayCommand]
+    private void SelectAllItems()
+    {
+        foreach (var group in Groups)
+        {
+            foreach (var item in group.Items)
+            {
+                item.IsChecked = true;
+            }
+        }
+        RebuildFromCache();
+    }
+
+    [RelayCommand]
+    private void DeselectAllItems()
+    {
+        foreach (var group in Groups)
+        {
+            foreach (var item in group.Items)
+            {
+                item.IsChecked = false;
+            }
+        }
+        RebuildFromCache();
+    }
+
     public void SaveState()
     {
         try

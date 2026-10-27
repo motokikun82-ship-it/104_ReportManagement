@@ -59,6 +59,9 @@ public partial class MainWindow : Window
     /// </summary>
     private void Window_Closing(object? sender, CancelEventArgs e)
     {
+        // テーマ変更による再起動時はチェックをスキップする
+        if (App.SuppressCloseCheck) return;
+
         string today = DateTime.Today.ToString("yyyy-MM-dd");
         var names = DatabaseService.Instance.GetUnexecutedItemNames(today);
         if (names.Count == 0) return;

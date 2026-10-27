@@ -10,6 +10,12 @@ namespace ReportManagement;
 
 public partial class App : Application
 {
+    /// <summary>
+    /// テーマ変更による再起動時など、終了時チェックをスキップするためのフラグ。
+    /// 新プロセス起動後に旧プロセスが閉じる際は確認ダイアログを出さない。
+    /// </summary>
+    public static bool SuppressCloseCheck { get; set; } = false;
+
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
